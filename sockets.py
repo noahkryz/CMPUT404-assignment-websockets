@@ -26,6 +26,27 @@ app = Flask(__name__)
 sockets = Sockets(app)
 app.debug = True
 
+# Code referenced from Abram Hindle's example code
+# It can be found here: 
+# https://github.com/uofa-cmput404/cmput404-slides/blob/master/examples/WebSocketsExamples/chat.py
+clients = []
+def send_all(msg):
+    for client in clients:
+        client.put( msg )
+
+def send_all_json(obj):
+    send_all( json.dumps(obj) )
+
+class Client:
+    def __init__(self):
+        self.queue = queue.Queue()
+
+    def put(self, v):
+        self.queue.put_nowait(v)
+
+    def get(self):
+        return self.queue.get()
+
 class World:
     def __init__(self):
         self.clear()
@@ -60,7 +81,7 @@ class World:
         return self.space
 
 
-clients = []
+# clients = []
 myWorld = World()        
 
 def set_listener( entity, data ):
@@ -68,27 +89,8 @@ def set_listener( entity, data ):
     for client in clients:
         client.put(json.dumps({entity:data}))
 
-# Code referenced from Abram Hindle's example code
-# It can be found here: 
-# https://github.com/uofa-cmput404/cmput404-slides/blob/master/examples/WebSocketsExamples/chat.py
-def send_all(msg):
-    for client in clients:
-        client.put( msg )
-
-def send_all_json(obj):
-    send_all( json.dumps(obj) )
 
 myWorld.add_set_listener( set_listener )
-
-class Client:
-    def __init__(self):
-        self.queue = queue.Queue()
-
-    def put(self, v):
-        self.queue.put_nowait(v)
-
-    def get(self):
-        return self.queue.get()
         
 @app.route('/')
 def hello():
@@ -104,7 +106,8 @@ def read_ws(ws,client):
             print("WS RECV: %s" % msg)
             if (msg is not None):
                 packet = json.loads(msg)
-                send_all_json(packet)
+                for entity in packet:
+                    myWorld.set(entity, packet[entity])
             else:
                 break
     except Exception as e:
@@ -118,8 +121,9 @@ def subscribe_socket(ws):
     # XXX: TODO IMPLEMENT ME
     client = Client()
     clients.append(client)
-    g = gevent.spawn( read_ws, ws, client)
+    g = gevent.spawn(read_ws, ws, client)  
     try:
+        # ws.send(json.dumps(myWorld.world()))
         while True:
             msg = client.get()
             ws.send(msg)
@@ -145,10 +149,11 @@ def flask_post_json():
 @app.route("/entity/<entity>", methods=['POST','PUT'])
 def update(entity):
     '''update the entities via this interface'''
-    data = flask_post_json()
-    for key, value in data.items():
-        myWorld.update(entity, key, value)
-    return json.dumps(myWorld.get(entity))
+    # data = flask_post_json()
+    # for key, value in data.items():
+    #     myWorld.update(entity, key, value)
+    # return json.dumps(myWorld.get(entity))
+    return None
 
 @app.route("/world", methods=['POST','GET'])    
 def world():
