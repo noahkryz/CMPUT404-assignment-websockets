@@ -26,7 +26,7 @@ freetests.py is LICENSE'D under a BSD-like license:
 
 From ws4py
 
-Copyright (c) 2011-2014, Sylvain Hellegouarch, Abram Hindle
+Copyright (c) 2011-2014, Sylvain Hellegouarch, Abram Hindle & Noah Kryzanowski
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 Contributors
 ============
-
+* Noah Kryzanowski
 * Mark Galloway
 * Abram Hindle
 * Cole Mackenzie
