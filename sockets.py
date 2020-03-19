@@ -124,7 +124,7 @@ def subscribe_socket(ws):
     clients.append(client)
     g = gevent.spawn(read_ws, ws, client)  
     try:
-        # ws.send(json.dumps(myWorld.world()))
+        ws.send(json.dumps(myWorld.world()))
         while True:
             msg = client.get()
             ws.send(msg)
@@ -147,14 +147,14 @@ def flask_post_json():
     else:
         return json.loads(request.form.keys()[0])
 
+# This code is from my assignment 4
 @app.route("/entity/<entity>", methods=['POST','PUT'])
 def update(entity):
     '''update the entities via this interface'''
-    # data = flask_post_json()
-    # for key, value in data.items():
-    #     myWorld.update(entity, key, value)
-    # return json.dumps(myWorld.get(entity))
-    return None
+    data = flask_post_json()
+    for key, value in data.items():
+        myWorld.update(entity, key, value)
+    return json.dumps(myWorld.get(entity))
 
 @app.route("/world", methods=['POST','GET'])    
 def world():
